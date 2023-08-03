@@ -1,44 +1,59 @@
 class Sensor {
   constructor(car) {
     this.car = car
-    this.rayCount = 4
+    this.rayCount = 5
     this.rayLength = 150
-    this.raySpread = Math.PI / 2 // radian equivalent of 90 degrees.
+    this.raySpread = Math.PI / 2
 
     this.rays = []
     this.readings = []
   }
 
-  update(roadBoarders) {
+  update(roadBorders, traffic) {
     this.#castRays()
     this.readings = []
     for (let i = 0; i < this.rays.length; i++) {
-      this.readings.push(this.#getReading(this.rays[i], roadBoarders))
+      this.readings.push(this.#getReading(this.rays[i], roadBorders, traffic))
     }
   }
 
-  #getReading(ray, roadBoarders) {
+  #getReading(ray, roadBorders, traffic) {
     let touches = []
 
-    for (let i = 0; i < roadBoarders.length; i++) {
+    for (let i = 0; i < roadBorders.length; i++) {
       const touch = getIntersection(
-        ray[0], // start of ray
-        ray[1], // end of ray
-        roadBoarders[i][0], // start of border
-        roadBoarders[i][1]
+        ray[0],
+        ray[1],
+        roadBorders[i][0],
+        roadBorders[i][1]
       )
       if (touch) {
         touches.push(touch)
       }
     }
 
-    if (touches.length == 0) {
-      return null
+    for (let i = 0; i < traffic.length; i++) {
+      const poly = traffic[i].polygon
+      for (let j = 0; j < poly.length; j++) {
+        const value = getIntersection(
+          ray[0],
+          ray[1],
+          poly[j],
+          poly[(j + 1) % poly.length]
+        )
+        if (value) {
+          touches.push(value)
+        }
+      }
     }
 
-    const offests = touches.map((e) => e.offset)
-    const minOffset = Math.min(...offests)
-    return touches.find((e) => e.offset == minOffset)
+    if (touches.length == 0) {
+      return null
+    } else {
+      const offsets = touches.map((e) => e.offset)
+      const minOffset = Math.min(...offsets)
+      return touches.find((e) => e.offset == minOffset)
+    }
   }
 
   #castRays() {
@@ -56,7 +71,6 @@ class Sensor {
         x: this.car.x - Math.sin(rayAngle) * this.rayLength,
         y: this.car.y - Math.cos(rayAngle) * this.rayLength,
       }
-
       this.rays.push([start, end])
     }
   }
