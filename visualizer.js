@@ -25,7 +25,9 @@ class Visualizer {
         levelTop,
         width,
         levelHeight,
-        i == network.levels.length - 1 ? ['🠉', '🠈', '🠊', '🠋'] : []
+        i == network.levels.length - 1
+          ? ['\u{02c4}', '\u{02c2}', '\u{02c3}', '\u{02c5}']
+          : []
       )
     }
   }

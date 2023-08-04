@@ -1,9 +1,10 @@
 class Car {
-  constructor(x, y, width, height, controlType, maxSpeed = 3) {
+  constructor(x, y, width, height, controlType, maxSpeed = 3, color = 'blue') {
     this.x = x
     this.y = y
     this.width = width
     this.height = height
+    this.color = color
 
     this.speed = 0
     this.acceleration = 0.2
@@ -27,13 +28,13 @@ class Car {
       this.polygon = this.#createPolygon()
       this.damaged = this.#assessDamage(roadBorders, traffic)
     }
+
     if (this.sensor) {
       this.sensor.update(roadBorders, traffic)
       const offests = this.sensor.readings.map((s) =>
         s == null ? 0 : 1 - s.offset
       )
       const outputs = NeuralNetwork.feedForward(offests, this.brain)
-      console.log(outputs)
 
       if (this.useBrain) {
         this.controls.forward = outputs[0]
@@ -120,11 +121,11 @@ class Car {
     this.y -= Math.cos(this.angle) * this.speed
   }
 
-  draw(ctx, color) {
+  draw(ctx, color, drawSensor = false) {
     if (this.damaged) {
       ctx.fillStyle = 'gray'
     } else {
-      ctx.fillStyle = color
+      ctx.fillStyle = this.color ?? color
     }
     ctx.beginPath()
     ctx.moveTo(this.polygon[0].x, this.polygon[0].y)
@@ -133,7 +134,7 @@ class Car {
     }
     ctx.fill()
 
-    if (this.sensor) {
+    if (this.sensor && drawSensor) {
       this.sensor.draw(ctx)
     }
   }
